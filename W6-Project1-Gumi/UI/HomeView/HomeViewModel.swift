@@ -39,9 +39,11 @@ class HomeViewModel {
                 } else {
                     if let err = error {
                         self.delegate?.error(error: err)
-                    } else { // Load successfully
-                        self.convertDataToMoviePage(data: data!)
+                    } else {
+                        guard let data = data else { return }
+                        self.convertDataToMoviePage(data: data)
                     }
+                    
                 }
             }
         })
@@ -52,14 +54,14 @@ class HomeViewModel {
     fileprivate func convertDataToMoviePage(data: Data) {
         let decoder = JSONDecoder()
         
-        DispatchQueue.main.async {
-            do {
-                let page = try decoder.decode(MoviePage.self, from: data)
-                self.listOfMovie.append(contentsOf: page.results)
+        do {
+            let page = try decoder.decode(MoviePage.self, from: data)
+            self.listOfMovie.append(contentsOf: page.results)
+            DispatchQueue.main.async {
                 self.delegate?.finishProccessing()
-            } catch {
-                self.delegate?.error(error: error)
             }
+        } catch {
+            self.delegate?.error(error: error)
         }
         
     }
